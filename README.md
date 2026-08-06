@@ -3,7 +3,7 @@
 [![Python 3.10+](https://img.shields.io/badge/python-3.10+-blue.svg)](https://www.python.org/downloads/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 [![Dependencies](https://img.shields.io/badge/dependencies-none-brightgreen.svg)](stigroll.py)
-[![Walkthrough](https://img.shields.io/badge/walkthrough-see%20DEMO-red.svg)](DEMO.md)
+[![Walkthrough](https://img.shields.io/badge/video-3%20min%20walkthrough-red.svg)](https://youtu.be/V9yN8JgrrxU)
 
 Roll DISA STIG checklist and SCAP scan results up to NIST SP 800-53 control families.
 
@@ -12,7 +12,8 @@ assessor does not report in V-numbers, they report in 800-53 controls. DISA publ
 between the two as Control Correlation Identifiers, and `stigroll` applies it, so the output
 answers **"show me the evidence for AU-12"** instead of handing someone a list of rule IDs.
 
-**[See the walkthrough](DEMO.md)**, which shows the gap this closes in three commands.
+**[Watch the 3 minute walkthrough](https://youtu.be/V9yN8JgrrxU)** or read it in
+[`DEMO.md`](DEMO.md): three input formats, three output formats, and a real assessment.
 
 ## Why it exists
 

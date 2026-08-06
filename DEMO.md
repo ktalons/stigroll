@@ -2,9 +2,9 @@
 
 Three input formats, three output formats, one real assessment at the end.
 
-<!-- VIDEO: uncomment and replace VIDEO_ID in both places once the recording is uploaded.
-[![stigroll walkthrough](https://img.youtube.com/vi/VIDEO_ID/maxresdefault.jpg)](https://youtu.be/VIDEO_ID)
--->
+[![stigroll walkthrough](https://img.youtube.com/vi/V9yN8JgrrxU/hqdefault.jpg)](https://youtu.be/V9yN8JgrrxU)
+
+**[Watch the walkthrough](https://youtu.be/V9yN8JgrrxU)** (about 3 minutes)
 
 Every command below runs against files checked into this repo and DISA's published CCI list, so
 you can follow along rather than take any of it on trust.
