@@ -6,75 +6,94 @@ Ninety seconds, terminal only. The gap first, then the fix.
 [![stigroll walkthrough](https://img.youtube.com/vi/VIDEO_ID/maxresdefault.jpg)](https://youtu.be/VIDEO_ID)
 -->
 
-The written walkthrough below covers the same ground, and every command is reproducible against
-the sample data checked into this repo.
+Every command below runs against data checked into this repo, so you can follow along rather than
+take any of it on trust.
 
----
-
-## What it shows
-
-**1. A real checklist export.** A Windows 11 workstation assessed against the Microsoft Windows 11
-STIG V2R8. Twenty of 256 rules worked by hand, twelve came back open.
-
-**2. The gap.** The export carries the Control Correlation Identifier and not the control it maps
-to:
+## Setup, about a minute
 
 ```bash
-grep -c 'CCI-000381' examples/sample-checklist.cklb   # 29 -> the CCI is there
-grep -c 'CM-7'       examples/sample-checklist.cklb   # 0  -> the control it maps to is not
-```
+git clone https://github.com/ktalons/stigroll && cd stigroll
 
-STIG Viewer resolves that mapping on screen and discards it on export. So an auditor asking *"show
-me the evidence for AU-12"* cannot be answered from this file, and every downstream consumer has
-to redo the join.
-
-**3. The fix.**
-
-```bash
-python3 stigroll.py examples/sample-checklist.cklb --cci-list U_CCI_List.xml --format markdown
-```
-
-Twelve open findings, expressed by control family instead of by rule number:
-
-| Family | Name | Open |
-|---|---|---:|
-| AU | Audit and Accountability | 5 |
-| CM | Configuration Management | 3 |
-| AC | Access Control | 2 |
-| SI | System and Information Integrity | 1 |
-| MA | Maintenance | 1 |
-| SC | System and Communications Protection | 1 |
-
-Same twelve findings. The language an assessment actually reports in.
-
----
-
-## Reproduce it yourself
-
-Everything below is public content and takes about a minute.
-
-```bash
-git clone https://github.com/ktalons/stigroll
-cd stigroll
-
-# DISA's CCI list. Public, no account required.
-# Note: the browse page at public.cyber.mil/stigs/cci/ currently redirects behind
-# a login. The direct file URL is open.
+# DISA's CCI list. Public, no account required. The browse page at
+# public.cyber.mil/stigs/cci/ currently redirects behind a login;
+# this direct file URL is open.
 curl -LO https://dl.dod.cyber.mil/wp-content/uploads/stigs/zip/U_CCI_List.zip
 unzip U_CCI_List.zip
-
-python3 stigroll.py examples/sample-checklist.cklb --cci-list U_CCI_List.xml --format markdown
 ```
 
-Expected output is checked in at [`examples/sample-output.md`](examples/sample-output.md), so you
-can diff your run against it.
+## 1. The input
 
-## About the sample data
+```bash
+ls examples/
+```
 
-`examples/sample-checklist.cklb` is a genuine assessment rather than invented data. The
-determinations, comments and finding details are real. Host name, IP and MAC have been replaced;
-nothing else was altered.
+```
+sample-checklist.cklb   sample-output.md
+```
+
+`sample-checklist.cklb` is a real assessment. A Windows 11 workstation against the Microsoft
+Windows 11 STIG V2R8, 20 of 256 rules worked by hand in STIG Viewer 3.7. Host name, IP and MAC
+were replaced before publishing. Nothing else was altered.
+
+## 2. The gap
+
+```bash
+grep -c 'CCI-000381' examples/sample-checklist.cklb
+grep -c 'CM-7'       examples/sample-checklist.cklb
+```
+
+```
+29
+0
+```
+
+Twenty-nine rules in that file reference `CCI-000381`. **Zero of them carry `CM-7`**, the NIST
+800-53 control that CCI maps to.
+
+STIG Viewer resolves that mapping and displays it on screen while you work. It does not write it
+into the export. So the checklist tells you which Control Correlation Identifier applies and never
+which control, and every consumer downstream has to redo the join to get back to control language.
+
+Which means the question an assessor is actually asked, *"show me the evidence for AU-12,"* is the
+one question this artifact cannot answer.
+
+## 3. The join
+
+```bash
+python3 stigroll.py examples/sample-checklist.cklb --cci-list U_CCI_List.xml
+```
+
+Runs in about a tenth of a second and prints the full report. The part that matters:
+
+```
+## Open findings by NIST 800-53 control family
+
+| Family | Name | CAT I | CAT II | CAT III | Total |
+|---|---|---:|---:|---:|---:|
+| AU | Audit and Accountability | 0 | 5 | 0 | 5 |
+| CM | Configuration Management | 1 | 2 | 0 | 3 |
+| AC | Access Control | 0 | 2 | 0 | 2 |
+| SI | System and Information Integrity | 0 | 1 | 0 | 1 |
+| MA | Maintenance | 1 | 0 | 0 | 1 |
+| SC | System and Communications Protection | 0 | 1 | 0 | 1 |
+```
+
+That block is the tool's raw stdout, unedited. It is markdown on purpose, so a report can be
+pasted straight into a ticket or a wiki without reformatting.
+
+Same twelve findings. Expressed in the language an assessment reports in, instead of the language
+the scanner speaks.
+
+The report also carries `not reviewed: 236`, because the checklist covers the full benchmark and
+only 20 rules were assessed. The artifact states its own completeness rather than presenting a
+sample as though it were the whole.
+
+Full expected output is checked in at [`examples/sample-output.md`](examples/sample-output.md), so
+you can diff your run against a known-good result.
+
+## What the sample data shows
 
 Ten of the twelve open findings are an **absent** registry value rather than a wrong one. Nothing
-was misconfigured on that host. Settings had simply never been configured, which is what an
-unmanaged endpoint looks like and is the argument for CM-6 in a sentence.
+on that host was misconfigured. Settings had simply never been configured at all.
+
+That is what an unmanaged endpoint looks like, and it is the argument for CM-6 in one sentence.
