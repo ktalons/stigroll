@@ -1,0 +1,23 @@
+# macOS
+.DS_Store
+
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+
+# DISA source content: public and freely redistributable, but large and
+# reproducible from the URL in README.md
+U_CCI_List.xml
+U_CCI_List.html
+cci2html.xsl
+*.zip
+
+# Local scan and checklist output. Only the sanitized sample in examples/ ships.
+/checklists/
+/scans/
+*.ckl
+*.cklb
+!examples/*.cklb
+!tests/fixtures/*.cklb
+!tests/fixtures/*.ckl
