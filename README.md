@@ -20,13 +20,14 @@ STIG Viewer resolves the CCI to a control on screen, then drops it on export. Ch
 checklist:
 
 ```bash
-grep -c 'CCI-000381' examples/sample-checklist.cklb   # 1
+grep -c 'CCI-000381' examples/sample-checklist.cklb   # 29
 grep -c 'CM-7'       examples/sample-checklist.cklb   # 0
 ```
 
-The CCI survives. The control does not. So every consumer downstream of that export has to redo
-the join, which is why the one question an auditor actually asks is the one the tooling cannot
-answer.
+Twenty-nine rules in that checklist reference `CCI-000381`. Not one of them carries `CM-7`, the
+control it maps to. The CCI survives the export and the control does not, so every consumer
+downstream has to redo the join, which is why the question an auditor actually asks is the one
+the tooling cannot answer.
 
 ## What it does
 
@@ -47,19 +48,60 @@ matrix by hand is the same problem.
 
 ## Usage
 
-```bash
-# Get the CCI list once (public, no account needed)
-curl -LO https://dl.dod.cyber.mil/wp-content/uploads/stigs/zip/U_CCI_List.zip && unzip U_CCI_List.zip
+Python 3.10 or newer. Nothing to install.
 
-# Roll one or many checklists up to control families
-python3 stigroll.py checklists/*.cklb --cci-list U_CCI_List.xml
+### Try it in about a minute
+
+```bash
+git clone https://github.com/ktalons/stigroll && cd stigroll
+
+# DISA's CCI list. Public, no account required.
+# The browse page at public.cyber.mil/stigs/cci/ currently redirects behind a
+# login; this direct file URL is open.
+curl -LO https://dl.dod.cyber.mil/wp-content/uploads/stigs/zip/U_CCI_List.zip
+unzip U_CCI_List.zip
+
+# Run it against the real assessment included in this repo
+python3 stigroll.py examples/sample-checklist.cklb --cci-list U_CCI_List.xml
+```
+
+That should reproduce [`examples/sample-output.md`](examples/sample-output.md) exactly, so you can
+diff your run against a known-good result.
+
+### Against your own data
+
+```bash
+# One checklist, or a glob, or several files of mixed formats in one pass
+python3 stigroll.py my-host.cklb --cci-list U_CCI_List.xml
+python3 stigroll.py /path/to/checklists/*.cklb --cci-list U_CCI_List.xml
+python3 stigroll.py host1.cklb host2.ckl results-xccdf.xml --cci-list U_CCI_List.xml
 
 # Machine-readable, for a pipeline
-python3 stigroll.py scans/results-xccdf.xml --cci-list U_CCI_List.xml --format json
+python3 stigroll.py my-host.cklb --cci-list U_CCI_List.xml --format json
 
-# Only the findings, with the full status counts preserved in the summary
-python3 stigroll.py checklists/*.cklb --open-only --format csv
+# List only the findings. The status summary still reports every status,
+# so the report cannot understate what was assessed.
+python3 stigroll.py my-host.cklb --cci-list U_CCI_List.xml --open-only --format csv
+
+# Write to a file instead of stdout
+python3 stigroll.py my-host.cklb --cci-list U_CCI_List.xml -o rollup.md
 ```
+
+Multiple hosts in one run produce a per-host breakdown alongside the totals.
+
+### Options
+
+| Option | Default | Notes |
+|---|---|---|
+| `inputs` | required | One or more `.cklb`, `.ckl`, or XCCDF results files. Mixed formats are fine |
+| `--cci-list` | none | Path to `U_CCI_List.xml`. **Without it there is no control mapping**, only status and severity counts |
+| `--format` | `markdown` | `markdown`, `csv`, or `json` |
+| `--open-only` | off | Narrows the listing to open findings. Does not change the summary counts |
+| `-o`, `--output` | stdout | Write to a file |
+| `--revision` | `5` | 800-53 revision to prefer in the CCI mapping |
+
+Warnings go to `stderr` and data goes to `stdout`, so a malformed input cannot corrupt a piped
+report. One unparseable file warns and the run continues.
 
 ## Worked example
 

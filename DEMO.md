@@ -20,8 +20,8 @@ STIG V2R8. Twenty of 256 rules worked by hand, twelve came back open.
 to:
 
 ```bash
-grep -c 'CCI-000381' examples/sample-checklist.cklb   # 1  -> the CCI is there
-grep -c 'CM-7'       examples/sample-checklist.cklb   # 0  -> the control is not
+grep -c 'CCI-000381' examples/sample-checklist.cklb   # 29 -> the CCI is there
+grep -c 'CM-7'       examples/sample-checklist.cklb   # 0  -> the control it maps to is not
 ```
 
 STIG Viewer resolves that mapping on screen and discards it on export. So an auditor asking *"show
