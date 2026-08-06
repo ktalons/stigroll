@@ -143,6 +143,26 @@ XCCDF  (XML)   ─┘                  dataclass                         └─ 
               normalize HERE
 ```
 
+### The revision is chosen once, for the whole CCI list
+
+A CCI can map to different controls in different 800-53 revisions, and some are retired between
+them. `CCI-000795` maps to IA-4 through Rev 4 and has no Rev 5 reference at all; its successor
+`CCI-003627` maps to AC-2 (3). Falling back per item would quietly put an IA control into a report
+labelled Rev 5, so the fallback is decided once for the whole list instead.
+
+The bundled fixtures demonstrate it. Same rule, one flag apart:
+
+```bash
+python3 stigroll.py tests/fixtures/host1.cklb --cci-list tests/fixtures/mini_cci.xml --format csv
+#  V-260470 -> AC-2;CM-6    families AC;CM     (Rev 5, the default)
+
+python3 stigroll.py tests/fixtures/host1.cklb --cci-list tests/fixtures/mini_cci.xml --revision 4 --format csv
+#  V-260470 -> CM-6;IA-4    families CM;IA     (Rev 4)
+```
+
+`tests/fixtures/mini_cci.xml` is generated from the published CCI list rather than hand-written,
+so the fixture cannot assert a mapping that does not exist.
+
 ## Scope and limits
 
 - **Base control granularity by design.** `AC-2 (3)(a)` is reported as `AC-2`. Keeping
