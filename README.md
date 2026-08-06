@@ -71,19 +71,15 @@ diff your run against a known-good result.
 ### Against your own data
 
 ```bash
-# One checklist, or a glob, or several files of mixed formats in one pass
+# One file, a glob, or several files of mixed formats in a single pass
 python3 stigroll.py my-host.cklb --cci-list U_CCI_List.xml
 python3 stigroll.py /path/to/checklists/*.cklb --cci-list U_CCI_List.xml
-python3 stigroll.py host1.cklb host2.ckl results-xccdf.xml --cci-list U_CCI_List.xml
+python3 stigroll.py host.cklb legacy.ckl scan-results.xml --cci-list U_CCI_List.xml
 
 # Machine-readable, for a pipeline
-python3 stigroll.py my-host.cklb --cci-list U_CCI_List.xml --format json
+python3 stigroll.py my-host.cklb --cci-list U_CCI_List.xml --format json | jq '.summary'
 
-# List only the findings. The status summary still reports every status,
-# so the report cannot understate what was assessed.
-python3 stigroll.py my-host.cklb --cci-list U_CCI_List.xml --open-only --format csv
-
-# Write to a file instead of stdout
+# Write a report to a file
 python3 stigroll.py my-host.cklb --cci-list U_CCI_List.xml -o rollup.md
 ```
 
@@ -96,9 +92,11 @@ Multiple hosts in one run produce a per-host breakdown alongside the totals.
 | `inputs` | required | One or more `.cklb`, `.ckl`, or XCCDF results files. Mixed formats are fine |
 | `--cci-list` | none | Path to `U_CCI_List.xml`. **Without it there is no control mapping**, only status and severity counts |
 | `--format` | `markdown` | `markdown`, `csv`, or `json` |
-| `--open-only` | off | Narrows the listing to open findings. Does not change the summary counts |
 | `-o`, `--output` | stdout | Write to a file |
-| `--revision` | `5` | 800-53 revision to prefer in the CCI mapping |
+
+Mapping targets **800-53 Revision 5**, which is what FedRAMP baselines are built from. That is a
+constant rather than a flag: a report that silently mixes revisions is worse than one that speaks
+a single standard.
 
 Warnings go to `stderr` and data goes to `stdout`, so a malformed input cannot corrupt a piped
 report. One unparseable file warns and the run continues.
@@ -150,18 +148,8 @@ them. `CCI-000795` maps to IA-4 through Rev 4 and has no Rev 5 reference at all;
 `CCI-003627` maps to AC-2 (3). Falling back per item would quietly put an IA control into a report
 labelled Rev 5, so the fallback is decided once for the whole list instead.
 
-The bundled fixtures demonstrate it. Same rule, one flag apart:
-
-```bash
-python3 stigroll.py tests/fixtures/host1.cklb --cci-list tests/fixtures/mini_cci.xml --format csv
-#  V-260470 -> AC-2;CM-6    families AC;CM     (Rev 5, the default)
-
-python3 stigroll.py tests/fixtures/host1.cklb --cci-list tests/fixtures/mini_cci.xml --revision 4 --format csv
-#  V-260470 -> CM-6;IA-4    families CM;IA     (Rev 4)
-```
-
-`tests/fixtures/mini_cci.xml` is generated from the published CCI list rather than hand-written,
-so the fixture cannot assert a mapping that does not exist.
+`examples/ubuntu-host.cklb` carries a rule referencing both halves of that pair, so the behaviour
+is checkable against real published data rather than taken on trust.
 
 ## Scope and limits
 

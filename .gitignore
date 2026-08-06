@@ -19,5 +19,4 @@ cci2html.xsl
 *.ckl
 *.cklb
 !examples/*.cklb
-!tests/fixtures/*.cklb
-!tests/fixtures/*.ckl
+!examples/*.ckl

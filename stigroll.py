@@ -15,9 +15,9 @@ Inputs (mix and match, any number):
   *.xml    XCCDF results from `oscap xccdf eval --results`
 
 Usage:
-  stigroll.py checklists/*.cklb --cci-list U_CCI_List.xml
-  stigroll.py scans/results-xccdf.xml --cci-list U_CCI_List.xml --format csv
-  stigroll.py checklists/*.cklb --open-only --format json
+  stigroll.py host.cklb --cci-list U_CCI_List.xml
+  stigroll.py results-xccdf.xml --cci-list U_CCI_List.xml --format csv
+  stigroll.py host1.cklb host2.ckl scan.xml --cci-list U_CCI_List.xml --format json
 
 Standard library only. No install step.
 """
@@ -172,7 +172,14 @@ def normalize_severity(raw: str) -> str:
 # --------------------------------------------------------------------------
 
 
-def load_cci_map(path: Path, prefer_revision: str = "5") -> dict[str, list[str]]:
+# FedRAMP baselines are built from Rev 5, so that is what this targets. The
+# revision is a constant rather than a flag: it is not a knob an assessor
+# should be turning per run, and a report that silently mixes revisions is
+# worse than one that only speaks a single standard.
+PREFER_REVISION = "5"
+
+
+def load_cci_map(path: Path, prefer_revision: str = PREFER_REVISION) -> dict[str, list[str]]:
     """Parse DISA's U_CCI_List.xml into {CCI id: [control ids]}.
 
     Each cci_item carries <references> to several 800-53 revisions at once, so
@@ -596,11 +603,7 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument(
         "--format", choices=["markdown", "csv", "json"], default="markdown", help="output format"
     )
-    parser.add_argument("--open-only", action="store_true", help="report only open findings")
     parser.add_argument("-o", "--output", type=Path, help="write to a file instead of stdout")
-    parser.add_argument(
-        "--revision", default="5", help="800-53 revision to prefer in the CCI mapping (default 5)"
-    )
     args = parser.parse_args(argv)
 
     findings: list[Finding] = []
@@ -623,16 +626,9 @@ def main(argv: list[str] | None = None) -> int:
         if not args.cci_list.exists():
             print(f"error: CCI list not found: {args.cci_list}", file=sys.stderr)
             return 1
-        apply_cci_map(findings, load_cci_map(args.cci_list, args.revision))
+        apply_cci_map(findings, load_cci_map(args.cci_list))
 
-    # Summarize the FULL set before filtering. --open-only narrows what gets
-    # listed, not what gets counted: a status table built from open findings
-    # alone would report "not a finding: 0" and read as a much worse posture
-    # than the assessment actually found.
     summary = summarize(findings)
-
-    if args.open_only:
-        findings = [f for f in findings if f.status == "open"]
 
     if args.format == "markdown":
         text = render_markdown(findings, summary)
