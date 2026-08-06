@@ -4,7 +4,7 @@ Three input formats, three output formats, one real assessment at the end.
 
 [![stigroll walkthrough](https://img.youtube.com/vi/V9yN8JgrrxU/hqdefault.jpg)](https://youtu.be/V9yN8JgrrxU)
 
-**[Watch the walkthrough](https://youtu.be/V9yN8JgrrxU)** (about 3 minutes)
+**[Watch the walkthrough](https://youtu.be/V9yN8JgrrxU)** (< 3 minutes)
 
 Every command below runs against files checked into this repo and DISA's published CCI list, so
 you can follow along rather than take any of it on trust.
