@@ -7,7 +7,7 @@
 
 Roll DISA STIG checklist and SCAP scan results up to NIST SP 800-53 control families.
 
-A STIG finding is technology-specific: *"V-253370, Credential Guard must be running."* A control
+> A STIG finding is technology-specific: *"V-253370, Credential Guard must be running."* A control
 assessor does not report in V-numbers, they report in 800-53 controls. DISA publishes the mapping
 between the two as Control Correlation Identifiers, and `stigroll` applies it, so the output
 answers **"show me the evidence for AU-12"** instead of handing someone a list of rule IDs.
@@ -39,6 +39,11 @@ answer.
 
 Standard library only. One file. No install step, which matters on a hardened assessor
 workstation where installing a package is a change request.
+
+> Nothing about the shape is STIG-specific. It is **scan output, plus a published mapping, equals
+framework-level rollup.** Swap the mapping file and the same three stages produce evidence against
+a different control framework. Any workflow that currently moves scanner results into a control
+matrix by hand is the same problem.
 
 ## Usage
 
@@ -81,7 +86,7 @@ CAT I 2, CAT II 10, CAT III 0.
 That last table is the point. The same twelve findings, expressed in the language an assessment
 reports in rather than the language the scanner speaks.
 
-Note `not reviewed: 236`. The checklist covers the full benchmark and only 20 rules were assessed,
+> *Note: `not reviewed: 236`. The checklist covers the full benchmark and only 20 rules were assessed,
 so the artifact states its own completeness rather than presenting a sample as a whole.
 
 ## Design
@@ -95,26 +100,6 @@ XCCDF  (XML)   ─┘                  dataclass                         └─ 
                      ▲
               normalize HERE
 ```
-
-**Normalize at the boundary.** Each format spells the same concepts differently: `.ckl` writes
-`NotAFinding`, `.cklb` writes `not_a_finding`, XCCDF writes `pass`. Converting once on the way in
-means the four hundred lines after the parsers never know where the data came from. Supporting a
-fourth format is one new function returning `list[Finding]` and one line in the dispatcher.
-
-**Findings count in every family they touch.** One rule can reference CCIs spanning AC and IA, so
-family totals legitimately exceed the finding count. The assessment question is "what evidence do
-I have for AC," not "how many unique findings exist." The status table is the one that reconciles
-to a true total.
-
-**Unmapped findings are surfaced, not dropped.** SCAP content that references CCEs instead of CCIs
-produces no control mapping. Hiding those would make a rollup look complete when it is not, and
-silent omission is the failure mode that actually costs an assessment.
-
-**The revision is chosen once, for the whole CCI list.** A CCI can map to different controls in
-Rev 4 and Rev 5, and some are retired between them. `CCI-000795` maps to IA-4 through Rev 4 and
-has no Rev 5 reference; its successor `CCI-003627` maps to AC-2 (3). Falling back per item would
-put an IA control into a report labelled Rev 5. Deciding once keeps the whole report in one
-standard.
 
 ## Scope and limits
 
@@ -130,13 +115,6 @@ standard.
   client hands you.
 
 Design notes and a roadmap are at the bottom of [`stigroll.py`](stigroll.py).
-
-## The pattern generalizes
-
-Nothing about the shape is STIG-specific. It is **scan output, plus a published mapping, equals
-framework-level rollup.** Swap the mapping file and the same three stages produce evidence against
-a different control framework. Any workflow that currently moves scanner results into a control
-matrix by hand is the same problem.
 
 ## License
 
