@@ -13,7 +13,10 @@ U_CCI_List.html
 cci2html.xsl
 *.zip
 
-# Local scan and checklist output. Only the sanitized sample in examples/ ships.
+# Demo output written by the walkthrough in DEMO.md
+rollup.md
+
+# Local scan and checklist output. Only the sanitized samples in examples/ ship.
 /checklists/
 /scans/
 *.ckl
